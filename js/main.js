@@ -8,6 +8,8 @@ var axes = true;
 var ground = true;
 var arm, forearm, body, handLeft, handRight;
 
+var all_joints = [];
+
 function fillScene() {
     scene = new THREE.Scene();
     scene.fog = new THREE.Fog( 0x808080, 2000, 4000 );
@@ -63,10 +65,46 @@ function fillScene() {
     // Move the hand part to the end of the forearm.
     handRight.position.y = faLength;
     forearm.add( handRight );
+    
+    
+    var base = new THREE.Object3D();
+    base.position.x = 100;
+    base.position.y = 20;
+    base.rotation.x = - Math.PI / 2.;
+    scene.add(base);
+    // scene.rotation.x = - Math.PI / 2.;
+    // base.rotation.x = - Math.PI / 2.;
 
-    // YOUR CODE HERE
-    // Add the second grabber handRight. Note that it uses a different color, defined above
-    // ALSO EDIT render() TO ENABLE CONTROLS FOR GRABBER
+    var pars = [
+    {gamma:0, b:0, alpha:0, theta:0, d:0,r:0},
+    {gamma:0, b:0, alpha:Math.PI / 2., theta:0, d:0,r:0},
+    {gamma:0, b:0, alpha:0, theta:0, d:100,r:0},
+    {gamma:0, b:0, alpha: - Math.PI / 2., theta:0, d:0,r:100},
+    {gamma:0, b:0, alpha:Math.PI / 2., theta:0, d:0,r:0},
+    {gamma:0, b:0, alpha:-Math.PI / 2., theta:0, d:0,r:0}
+    ]
+
+    all_joints = []
+
+    var parent = base;
+    for (var i = 0; i < 6; i++) {
+        var par = pars[i];
+        var joint = new Joint(i, parent, par.theta, par.r, par.alpha, par.d, par.gamma, par.b);
+        parent = joint.obj3D;
+        all_joints.push(joint);
+    }
+    /*
+
+    var cylinder = new THREE.Mesh(
+        new THREE.CylinderGeometry( 15, 15, 40, 32 ), robotForearmMaterial );
+    cylinder.rotation.x = 0 * Math.PI/180;
+    base.add( cylinder );
+
+    var stick = new THREE.Mesh(
+        new THREE.CylinderGeometry( 3, 3, 40, 8), robotForearmMaterial );
+    stick.position.x = 100;
+    stick.position.y = 60;
+    scene.add(stick);*/
 }
 
 function createRobotGrabber( part, length, material )
@@ -125,7 +163,7 @@ function init() {
     renderer.gammaInput = true;
     renderer.gammaOutput = true;
     renderer.setSize(canvasWidth, canvasHeight);
-    renderer.setClearColorHex( 0xAAAAAA, 1.0 );
+    renderer.setClearColor( 0xAAAAAA, 1.0 );
 
     // CAMERA
     camera = new THREE.PerspectiveCamera( 38, canvasRatio, 1, 10000 );
@@ -246,6 +284,8 @@ try {
     animate();
 } catch(e) {
     var errorReport = "Your program encountered an unrecoverable error, can not draw on canvas. Error was:<br/><br/>";
-    $('#container').append(errorReport+e);
+    jQuery(function($) {
+        $('#container').append(errorReport+e);
+    });
 }
 
